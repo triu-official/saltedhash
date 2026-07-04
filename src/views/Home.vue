@@ -3,10 +3,44 @@ import { onMounted, ref } from 'vue'
 import anime from 'animejs'
 import { ArrowRight } from 'lucide-vue-next'
 import EntryScene from '@/components/scene/EntryScene.vue'
+import { useProductsStore } from '@/stores/products'
 
 const showScene = ref(false)
+const store = useProductsStore()
+const hasWebGL = ref(true)
+
+// Helper to check WebGL support
+const checkWebGL = () => {
+  try {
+    const canvas = document.createElement('canvas')
+    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')))
+  } catch (e) {
+    return false
+  }
+}
 
 onMounted(() => {
+  hasWebGL.value = checkWebGL() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        anime({
+          targets: entry.target,
+          translateY: [20, 0],
+          opacity: [0, 1],
+          duration: 800,
+          easing: 'easeOutExpo'
+        })
+        observer.unobserve(entry.target)
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.venture-card').forEach(card => {
+    observer.observe(card)
+  })
+
   anime({
     targets: '.hero-text',
     translateY: [50, 0],
@@ -15,7 +49,7 @@ onMounted(() => {
     easing: 'easeOutExpo',
     delay: anime.stagger(200)
   })
-  setTimeout(() => { showScene.value = true }, 400)
+  setTimeout(() => { showScene.value = true }, 1200)
 })
 </script>
 
@@ -34,7 +68,7 @@ onMounted(() => {
         SALTEDHASH is a venture studio and brand umbrella. We build intelligent software systems and curate natural essentials — guided by elegant utility.
       </p>
       <div class="hero-text opacity-0 flex flex-wrap gap-4">
-        <router-link to="/studio" class="group flex items-center gap-2 bg-neutral-900 text-white px-7 py-3.5 text-sm uppercase tracking-widest font-medium hover:bg-tech transition-all duration-300">
+        <router-link to="/studio" class="group flex items-center gap-2 bg-neutral-900 text-white px-7 py-3.5 text-sm uppercase tracking-widest font-medium hover:bg-tech transition-all duration-300" v-ripple>
           Enter Studio <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </router-link>
         <router-link to="/triu" class="group flex items-center gap-2 border border-neutral-200 px-7 py-3.5 text-sm uppercase tracking-widest font-medium hover:border-naturals hover:text-naturals transition-all duration-300">
@@ -43,19 +77,48 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- 3D Scene -->
-    <section class="relative h-[65vh] overflow-hidden bg-black">
-      <Transition name="page">
-        <EntryScene v-if="showScene" class="w-full h-full" />
+    <!-- 3D Scene / 2D Fallback -->
+    <section class="relative h-[65vh] min-h-[480px] overflow-hidden bg-black">
+      <Transition
+        enter-active-class="transition-all duration-600 ease-out"
+        enter-from-class="opacity-0 translate-y-[30px]"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-300 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-[30px]"
+      >
+        <template v-if="showScene">
+          <div v-if="hasWebGL" class="w-full h-full min-h-[480px]">
+            <EntryScene class="w-full h-full" />
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-xs font-mono uppercase tracking-widest pointer-events-none">
+              Move mouse to explore · Click a product to view
+            </div>
+          </div>
+          <div v-else class="w-full h-full flex items-center overflow-x-auto overflow-y-hidden px-8 py-12 gap-8 snap-x snap-mandatory hide-scrollbar">
+            <div
+              v-for="product in (store.products.length ? store.products : store.fallbackProducts).slice(0, 5)"
+              :key="product.$id"
+              @click="store.openProductPanel(product)"
+              class="shrink-0 w-72 h-96 bg-[#FAF9F6] border border-neutral-300 rounded-lg p-6 flex flex-col justify-between cursor-pointer snap-center hover:scale-[1.02] transition-transform shadow-lg relative overflow-hidden"
+            >
+              <div class="absolute left-0 top-0 bottom-0 w-1.5" :style="{ backgroundColor: product.category === 'natural' ? '#2F4F2F' : (product.category === 'tech' ? '#233CB5' : '#666') }"></div>
+              <div>
+                <div class="text-[11px] font-mono tracking-widest text-neutral-500 mb-6 uppercase ml-2">{{ product.category || 'uncategorized' }}</div>
+                <h3 class="font-serif text-2xl font-bold text-neutral-900 leading-tight">{{ product.name }}</h3>
+              </div>
+              <div class="mt-auto pt-6">
+                <div v-if="product.price" class="text-lg font-medium text-neutral-800">₹{{ product.price.toFixed(2) }}</div>
+                <div class="text-[10px] font-mono text-neutral-500 mt-4 text-right">{{ product.brand_code }}</div>
+              </div>
+            </div>
+          </div>
+        </template>
       </Transition>
-      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-xs font-mono uppercase tracking-widest pointer-events-none">
-        Move mouse to explore · Click a product to view
-      </div>
     </section>
 
     <!-- Ventures -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 px-6 py-24 max-w-7xl mx-auto">
-      <router-link to="/studio" class="hero-text group relative overflow-hidden bg-background border border-neutral-200 p-10 md:p-14 hover:border-tech transition-colors duration-500 min-h-[380px] flex flex-col justify-between">
+      <router-link to="/studio" class="venture-card opacity-0 group relative overflow-hidden bg-background border border-neutral-200 p-10 md:p-14 hover:border-tech transition-colors duration-500 min-h-[380px] flex flex-col justify-between">
         <div class="absolute inset-0 bg-tech/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
         <div class="relative z-10">
           <div class="text-xs font-mono uppercase tracking-widest text-tech mb-4">01 — Services</div>
@@ -67,7 +130,7 @@ onMounted(() => {
         </div>
       </router-link>
 
-      <router-link to="/triu" class="hero-text group relative overflow-hidden bg-background border border-neutral-200 p-10 md:p-14 hover:border-naturals transition-colors duration-500 min-h-[380px] flex flex-col justify-between">
+      <router-link to="/triu" class="venture-card opacity-0 group relative overflow-hidden bg-background border border-neutral-200 p-10 md:p-14 hover:border-naturals transition-colors duration-500 min-h-[380px] flex flex-col justify-between">
         <div class="absolute inset-0 bg-naturals/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
         <div class="relative z-10">
           <div class="text-xs font-mono uppercase tracking-widest text-naturals mb-4">02 — Products</div>
@@ -79,7 +142,7 @@ onMounted(() => {
         </div>
       </router-link>
 
-      <router-link to="/studio" class="hero-text group relative overflow-hidden bg-background border border-neutral-200 p-10 md:p-14 hover:border-marketing transition-colors duration-500 min-h-[380px] flex flex-col justify-between">
+      <router-link to="/studio" class="venture-card opacity-0 group relative overflow-hidden bg-background border border-neutral-200 p-10 md:p-14 hover:border-marketing transition-colors duration-500 min-h-[380px] flex flex-col justify-between">
         <div class="absolute inset-0 bg-marketing/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
         <div class="relative z-10">
           <div class="text-xs font-mono uppercase tracking-widest text-marketing mb-4">03 — Marketing</div>

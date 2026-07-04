@@ -28,11 +28,31 @@ const toggleMenu = () => {
           </div>
         </div>
         <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
-          <RouterLink to="/" class="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">Home</RouterLink>
-          <RouterLink to="/studio" class="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">Studio</RouterLink>
-          <RouterLink to="/triu" class="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">TRIU</RouterLink>
-          <RouterLink to="/about" class="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">About</RouterLink>
-          <RouterLink to="/contact" class="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">Contact</RouterLink>
+          <RouterLink to="/" class="relative text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors group py-1" active-class="!text-neutral-900">
+            Home
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-100 hidden group-[.router-link-active]:block"></span>
+          </RouterLink>
+          <RouterLink to="/studio" class="relative text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors group py-1" active-class="!text-neutral-900">
+            Studio
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-100 hidden group-[.router-link-active]:block"></span>
+          </RouterLink>
+          <RouterLink to="/triu" class="relative text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors group py-1" active-class="!text-neutral-900">
+            TRIU
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-100 hidden group-[.router-link-active]:block"></span>
+          </RouterLink>
+          <RouterLink to="/about" class="relative text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors group py-1" active-class="!text-neutral-900">
+            About
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-100 hidden group-[.router-link-active]:block"></span>
+          </RouterLink>
+          <RouterLink to="/contact" class="relative text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors group py-1" active-class="!text-neutral-900">
+            Contact
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+            <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-100 hidden group-[.router-link-active]:block"></span>
+          </RouterLink>
         </div>
         <div class="flex items-center md:hidden">
           <button @click="toggleMenu" aria-label="Toggle navigation menu" class="text-neutral-600 hover:text-neutral-900 focus:outline-none">

@@ -14,6 +14,24 @@ const formData = ref({
   message: ''
 })
 
+const categories = [
+  "AI & Machine Learning",
+  "Web & SaaS Development",
+  "Security & Code Review",
+  "Automation & Integration",
+  "Digital Growth Strategy",
+  "TRIU Naturals — Order",
+  "General Inquiry",
+  "Partnership"
+]
+
+const selectedCategory = ref('')
+
+const selectCategory = (cat: string) => {
+  selectedCategory.value = cat
+  formData.value.productInterest = cat
+}
+
 const fieldErrors = ref({
   name: '',
   phone: '',
@@ -61,8 +79,19 @@ const validate = () => {
 }
 
 onMounted(() => {
-  if (route.query.interest) {
-    formData.value.productInterest = route.query.interest as string
+  if (route.query.interest || route.query.product || route.query.service) {
+    const val = (route.query.interest || route.query.product || route.query.service) as string
+    formData.value.productInterest = val
+    // Try to auto-select matching category chip
+    const match = categories.find(c => c.toLowerCase() === val.toLowerCase())
+    if (match) {
+      selectedCategory.value = match
+    } else {
+      selectedCategory.value = 'General Inquiry'
+    }
+  } else {
+    selectedCategory.value = 'General Inquiry'
+    formData.value.productInterest = 'General Inquiry'
   }
 })
 
@@ -95,13 +124,34 @@ const handleSubmit = async () => {
       <p class="text-neutral-600 mb-8">Thank you for your interest. We will be in touch shortly.</p>
       <button
         @click="success = false"
-        class="bg-neutral-900 text-white font-medium py-3 px-8 hover:bg-neutral-800 transition-colors uppercase tracking-wider text-sm"
+        class="bg-neutral-900 text-white font-medium py-3 px-8 hover:bg-neutral-800 transition-colors uppercase tracking-wider text-sm" v-ripple
       >
         Send Another
       </button>
     </div>
 
     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+
+      <div class="mb-8">
+        <label class="block text-sm font-medium text-neutral-900 mb-4">What are you looking for?</label>
+        <div class="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 sm:flex-wrap">
+          <button
+            v-for="cat in categories"
+            :key="cat"
+            type="button"
+            @click="selectCategory(cat)"
+            class="shrink-0 px-4 py-2 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
+            :class="[
+              selectedCategory === cat
+                ? 'bg-neutral-900 text-white border-neutral-900'
+                : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100'
+            ]" v-ripple
+          >
+            {{ cat }}
+          </button>
+        </div>
+        <p class="text-xs text-neutral-500 mt-2">Select a category to get started, or type your own interest below.</p>
+      </div>
       <div v-if="showDbFallback" class="p-4 bg-amber-50 border border-amber-200 text-amber-700 text-sm">
         Our inquiry system is being set up. Please reach us via
         <a href="#contact-platforms" class="underline font-medium">WhatsApp or email using the options below</a>.
@@ -183,7 +233,7 @@ const handleSubmit = async () => {
       <button
         type="submit"
         :disabled="loading"
-        class="w-full bg-neutral-900 text-white font-medium py-4 px-8 hover:bg-neutral-800 transition-colors uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full bg-neutral-900 text-white font-medium py-4 px-8 hover:bg-neutral-800 transition-colors uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed" v-ripple
       >
         <span v-if="loading">Submitting...</span>
         <span v-else>Submit Inquiry</span>
