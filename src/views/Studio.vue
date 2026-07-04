@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import anime from 'animejs'
-import { Plus, Minus, Code2, Brain, TrendingUp, Smartphone, Shield, Zap, Check, Clock } from 'lucide-vue-next'
+import { Plus, Minus, Code2, Brain, TrendingUp, Smartphone, Shield, Zap, Check, Clock, ExternalLink } from 'lucide-vue-next'
 
 const services = [
   {

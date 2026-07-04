@@ -10,6 +10,12 @@ import type { Product } from '@/composables/useProducts'
 const props = defineProps<{
   product: Product;
   position: [number, number, number];
+  isDimmed?: boolean;
+}>()
+
+const emit = defineEmits<{
+  hover: [id: string];
+  unhover: [];
 }>()
 
 const store = useProductsStore()
@@ -32,29 +38,58 @@ function drawCanvasTexture(): CanvasTexture {
   canvas.height = 682
   const ctx = canvas.getContext('2d')!
   const w = 512, h = 682
+  const R = 24
+
   const cat = props.product.category || ''
   const col = categoryColor(cat)
   const name = props.product.name
   const price = props.product.price
   const brand = props.product.brand_code
 
-  const grad = ctx.createLinearGradient(0, 0, w, h)
-  grad.addColorStop(0, '#1a1a2e')
-  grad.addColorStop(1, '#16213e')
-  ctx.fillStyle = grad
-  ctx.fillRect(0, 0, w, h)
+  ctx.beginPath()
+  ctx.moveTo(R, 0)
+  ctx.lineTo(w - R, 0)
+  ctx.quadraticCurveTo(w, 0, w, R)
+  ctx.lineTo(w, h - R)
+  ctx.quadraticCurveTo(w, h, w - R, h)
+  ctx.lineTo(R, h)
+  ctx.quadraticCurveTo(0, h, 0, h - R)
+  ctx.lineTo(0, R)
+  ctx.quadraticCurveTo(0, 0, R, 0)
+  ctx.closePath()
+
+  ctx.fillStyle = '#FAF9F6'
+  ctx.fill()
+
+  ctx.strokeStyle = '#d4d4d4'
+  ctx.lineWidth = 2
+  ctx.stroke()
+
+  ctx.save()
+  ctx.beginPath()
+  ctx.moveTo(R, 0)
+  ctx.lineTo(w - R, 0)
+  ctx.quadraticCurveTo(w, 0, w, R)
+  ctx.lineTo(w, h - R)
+  ctx.quadraticCurveTo(w, h, w - R, h)
+  ctx.lineTo(R, h)
+  ctx.quadraticCurveTo(0, h, 0, h - R)
+  ctx.lineTo(0, R)
+  ctx.quadraticCurveTo(0, 0, R, 0)
+  ctx.closePath()
+  ctx.clip()
 
   ctx.fillStyle = col
   ctx.fillRect(0, 0, 6, h)
 
   ctx.textAlign = 'left'
-  ctx.font = '600 11px "JetBrains Mono", monospace'
+  ctx.font = '600 11px "Inter", sans-serif'
   ctx.fillStyle = col
   ctx.fillText(cat.toUpperCase(), 28, 44)
 
   ctx.textAlign = 'center'
-  ctx.font = '700 30px Georgia, "Playfair Display", serif'
-  ctx.fillStyle = '#ffffff'
+  ctx.font = '700 24px "Playfair Display", Georgia, serif'
+  ctx.fillStyle = '#111827'
 
   const words = name.split(' ')
   let line = ''
@@ -65,7 +100,7 @@ function drawCanvasTexture(): CanvasTexture {
     if (ctx.measureText(test).width > maxW && line) {
       ctx.fillText(line, w / 2, ly)
       line = word
-      ly += 36
+      ly += 32
     } else {
       line = test
     }
@@ -73,17 +108,19 @@ function drawCanvasTexture(): CanvasTexture {
   ctx.fillText(line, w / 2, ly)
 
   if (price) {
-    ly += 52
+    ly += 48
     ctx.textAlign = 'center'
-    ctx.font = '400 18px "Inter", sans-serif'
-    ctx.fillStyle = '#cccccc'
+    ctx.font = '600 22px "Inter", sans-serif'
+    ctx.fillStyle = '#111827'
     ctx.fillText(`\u20B9${price.toFixed(2)}`, w / 2, ly)
   }
 
   ctx.textAlign = 'right'
   ctx.font = '400 10px "JetBrains Mono", monospace'
-  ctx.fillStyle = '#555555'
+  ctx.fillStyle = '#a3a3a3'
   ctx.fillText(brand, w - 20, h - 16)
+
+  ctx.restore()
 
   return new CanvasTexture(canvas)
 }
@@ -129,18 +166,20 @@ onBeforeRender(() => {
   }
   const s = easeOutBack(progress)
 
-  let hoverScale = 1
-  if (hovered.value && progress >= 1) {
-    const t = (now / 1000) * 4
-    hoverScale = 1 + Math.sin(t) * 0.03
-  }
-
-  meshRef.value.scale.set(s * hoverScale, s * hoverScale, s * hoverScale)
+  meshRef.value.scale.set(s, s, s)
 
   const baseY = props.position[1]
   const floatOffset = Math.sin(now / 1000 * 2 + props.position[0]) * 0.2 * (progress >= 1 ? 1 : 0)
   const dropY = (1 - progress) * 5
   meshRef.value.position.set(props.position[0], baseY + floatOffset - dropY, props.position[2])
+
+  if (materialRef.value && progress >= 1) {
+    if (props.isDimmed) {
+      materialRef.value.opacity = 0.6
+    } else {
+      materialRef.value.opacity = 1.0
+    }
+  }
 
   const cam = (camera && 'value' in camera ? camera.value : camera) as PerspectiveCamera | undefined
   if (cam?.position) {
@@ -155,11 +194,13 @@ const handleClick = () => {
 const handlePointerOver = () => {
   document.body.style.cursor = 'pointer'
   hovered.value = true
+  emit('hover', props.product.$id)
 }
 
 const handlePointerOut = () => {
   document.body.style.cursor = 'default'
   hovered.value = false
+  emit('unhover')
 }
 </script>
 

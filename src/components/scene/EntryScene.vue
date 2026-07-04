@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { TresCanvas } from '@tresjs/core'
+import { TresCanvas, useLoop } from '@tresjs/core'
 import { BasicShadowMap, SRGBColorSpace, NoToneMapping } from 'three'
 import CameraRig from './CameraRig.vue'
 import ProductCard3D from './ProductCard3D.vue'
 import { useProductsStore } from '@/stores/products'
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 
 const store = useProductsStore()
+const groupRef = ref<any>(null)
+const { onBeforeRender } = useLoop()
 
 const gl = {
   clearColor: '#000000',
@@ -44,6 +46,14 @@ const displayProducts = computed(() => {
 const getPosition = (index: number): [number, number, number] => {
   return positions[index] || [0, 0, -12]
 }
+
+const hoveredProductId = ref<string | null>(null)
+
+onBeforeRender(({ delta }) => {
+  if (groupRef.value) {
+    groupRef.value.rotation.y += delta * 0.15
+  }
+})
 </script>
 
 <template>
@@ -66,12 +76,17 @@ const getPosition = (index: number): [number, number, number] => {
 
       <TresFog color="#000000" :near="1" :far="40" />
 
-      <ProductCard3D
-        v-for="(product, index) in displayProducts"
-        :key="product.$id"
-        :product="product"
-        :position="getPosition(index)"
-      />
+      <TresGroup ref="groupRef">
+        <ProductCard3D
+          v-for="(product, index) in displayProducts"
+          :key="product.$id"
+          :product="product"
+          :position="getPosition(index)"
+          :is-dimmed="hoveredProductId !== null && hoveredProductId !== product.$id"
+          @hover="hoveredProductId = product.$id"
+          @unhover="hoveredProductId = null"
+        />
+      </TresGroup>
     </TresCanvas>
   </div>
 </template>

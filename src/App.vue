@@ -65,8 +65,6 @@ const handleMouseMove = (e: MouseEvent) => {
   isHoveringInteractive.value = !!isInteractive
 }
 
-
-
 const updateOnlineStatus = () => { isOnline.value = navigator.onLine }
 
 onMounted(() => {
@@ -130,17 +128,4 @@ provide('isOnline', isOnline)
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
-
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
 </style>
