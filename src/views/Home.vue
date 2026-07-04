@@ -2,26 +2,12 @@
 import { onMounted, ref } from 'vue'
 import anime from 'animejs'
 import { ArrowRight } from 'lucide-vue-next'
-import EntryScene from '@/components/scene/EntryScene.vue'
 import { useProductsStore } from '@/stores/products'
 
-const showScene = ref(false)
+const showGallery = ref(false)
 const store = useProductsStore()
-const hasWebGL = ref(true)
-
-// Helper to check WebGL support
-const checkWebGL = () => {
-  try {
-    const canvas = document.createElement('canvas')
-    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')))
-  } catch (e) {
-    return false
-  }
-}
 
 onMounted(() => {
-  hasWebGL.value = checkWebGL() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -49,7 +35,7 @@ onMounted(() => {
     easing: 'easeOutExpo',
     delay: anime.stagger(200)
   })
-  setTimeout(() => { showScene.value = true }, 1200)
+  setTimeout(() => { showGallery.value = true }, 1200)
 })
 </script>
 
@@ -77,8 +63,8 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- 3D Scene / 2D Fallback -->
-    <section class="relative h-[65vh] min-h-[480px] overflow-hidden bg-black">
+    <!-- 2D Product Gallery -->
+    <section class="relative h-[65vh] min-h-[480px] overflow-hidden bg-neutral-950">
       <Transition
         enter-active-class="transition-all duration-600 ease-out"
         enter-from-class="opacity-0 translate-y-[30px]"
@@ -87,33 +73,28 @@ onMounted(() => {
         leave-from-class="opacity-100 translate-y-0"
         leave-to-class="opacity-0 translate-y-[30px]"
       >
-        <template v-if="showScene">
-          <div v-if="hasWebGL" class="w-full h-full min-h-[480px]">
-            <EntryScene class="w-full h-full" />
-            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-xs font-mono uppercase tracking-widest pointer-events-none">
-              Move mouse to explore · Click a product to view
+        <div v-if="showGallery" class="w-full h-full flex items-center overflow-x-auto overflow-y-hidden px-8 py-12 gap-8 snap-x snap-mandatory hide-scrollbar">
+          <div
+            v-for="product in (store.products.length ? store.products : store.fallbackProducts).slice(0, 5)"
+            :key="product.$id"
+            @click="store.openProductPanel(product)"
+            class="shrink-0 w-72 h-96 bg-[#FAF9F6] border border-neutral-300 rounded-lg p-6 flex flex-col justify-between cursor-pointer snap-center hover:scale-[1.02] transition-transform shadow-lg relative overflow-hidden"
+          >
+            <div class="absolute left-0 top-0 bottom-0 w-1.5" :style="{ backgroundColor: product.category === 'natural' ? '#2F4F2F' : (product.category === 'tech' ? '#233CB5' : '#666') }"></div>
+            <div>
+              <div class="text-[11px] font-mono tracking-widest text-neutral-500 mb-6 uppercase ml-2">{{ product.category || 'uncategorized' }}</div>
+              <h3 class="font-serif text-2xl font-bold text-neutral-900 leading-tight">{{ product.name }}</h3>
+            </div>
+            <div class="mt-auto pt-6">
+              <div v-if="product.price" class="text-lg font-medium text-neutral-800">₹{{ product.price.toFixed(2) }}</div>
+              <div class="text-[10px] font-mono text-neutral-500 mt-4 text-right">{{ product.brand_code }}</div>
             </div>
           </div>
-          <div v-else class="w-full h-full flex items-center overflow-x-auto overflow-y-hidden px-8 py-12 gap-8 snap-x snap-mandatory hide-scrollbar">
-            <div
-              v-for="product in (store.products.length ? store.products : store.fallbackProducts).slice(0, 5)"
-              :key="product.$id"
-              @click="store.openProductPanel(product)"
-              class="shrink-0 w-72 h-96 bg-[#FAF9F6] border border-neutral-300 rounded-lg p-6 flex flex-col justify-between cursor-pointer snap-center hover:scale-[1.02] transition-transform shadow-lg relative overflow-hidden"
-            >
-              <div class="absolute left-0 top-0 bottom-0 w-1.5" :style="{ backgroundColor: product.category === 'natural' ? '#2F4F2F' : (product.category === 'tech' ? '#233CB5' : '#666') }"></div>
-              <div>
-                <div class="text-[11px] font-mono tracking-widest text-neutral-500 mb-6 uppercase ml-2">{{ product.category || 'uncategorized' }}</div>
-                <h3 class="font-serif text-2xl font-bold text-neutral-900 leading-tight">{{ product.name }}</h3>
-              </div>
-              <div class="mt-auto pt-6">
-                <div v-if="product.price" class="text-lg font-medium text-neutral-800">₹{{ product.price.toFixed(2) }}</div>
-                <div class="text-[10px] font-mono text-neutral-500 mt-4 text-right">{{ product.brand_code }}</div>
-              </div>
-            </div>
-          </div>
-        </template>
+        </div>
       </Transition>
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-xs font-mono uppercase tracking-widest pointer-events-none">
+        Scroll to browse · Click a product to view
+      </div>
     </section>
 
     <!-- Ventures -->
