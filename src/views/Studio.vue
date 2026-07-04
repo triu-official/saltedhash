@@ -17,7 +17,11 @@ const services = [
       'Make data-backed decisions with custom dashboards and predictive models.',
       'Deploy chatbots and document processors that work 24/7 without breaks.'
     ],
-    engagementInfo: '4\u201310 weeks \u00b7 Fixed scope or retainer \u00b7 Starting \u20B925,000'
+    engagementInfo: '4\u201310 weeks \u00b7 Fixed scope or retainer \u00b7 Starting \u20B925,000',
+    projects: [
+      { name: 'Predictive Demand Forecasting Engine', link: '#', external: true },
+      { name: 'NLP Document Processor', link: '#', external: true }
+    ]
   },
   {
     id: 2,
@@ -32,7 +36,11 @@ const services = [
       'Scale effortlessly from hundreds to millions of users without rewrites.',
       'Reduce maintenance overhead with clean, well-documented architecture.'
     ],
-    engagementInfo: '3\u20138 weeks \u00b7 Fixed scope \u00b7 Starting \u20B920,000'
+    engagementInfo: '3\u20138 weeks \u00b7 Fixed scope \u00b7 Starting \u20B920,000',
+    projects: [
+      { name: 'TRIU Naturals E-Commerce Platform', link: '/triu', external: false },
+      { name: 'SALTEDHASH PWA Shell', link: '/', external: false }
+    ]
   },
   {
     id: 3,
@@ -47,7 +55,11 @@ const services = [
       'Go from concept to launch in weeks with a battle-tested development framework.',
       'Iterate faster with built-in analytics, feedback loops, and automated deploys.'
     ],
-    engagementInfo: '6\u201312 weeks \u00b7 Fixed scope \u00b7 Starting \u20B950,000'
+    engagementInfo: '6\u201312 weeks \u00b7 Fixed scope \u00b7 Starting \u20B950,000',
+    projects: [
+      { name: 'Vertical SaaS Product Pipeline', link: '#', external: true },
+      { name: 'Real-Time Dashboard Suite', link: '#', external: true }
+    ]
   },
   {
     id: 4,
@@ -62,7 +74,10 @@ const services = [
       'Rank higher on search with a technical SEO audit and content roadmap.',
       'Lower customer acquisition costs through targeted, data-driven campaigns.'
     ],
-    engagementInfo: '2\u20136 weeks \u00b7 Retainer or project \u00b7 Starting \u20B915,000'
+    engagementInfo: '2\u20136 weeks \u00b7 Retainer or project \u00b7 Starting \u20B915,000',
+    projects: [
+      { name: 'B2B Lead Generation Automation', link: '#', external: true }
+    ]
   },
   {
     id: 5,
@@ -77,7 +92,10 @@ const services = [
       'Build customer trust with a security-first approach to your product.',
       'Meet compliance requirements for data protection and privacy regulations.'
     ],
-    engagementInfo: '1\u20133 weeks \u00b7 Fixed scope \u00b7 Starting \u20B918,000'
+    engagementInfo: '1\u20133 weeks \u00b7 Fixed scope \u00b7 Starting \u20B918,000',
+    projects: [
+      { name: 'Fintech Auth Flow Hardening', link: '#', external: true }
+    ]
   },
   {
     id: 6,
@@ -92,7 +110,10 @@ const services = [
       'Reduce human error in critical workflows with automated validation checks.',
       'Get real-time alerts and reports without logging into multiple dashboards.'
     ],
-    engagementInfo: '1\u20134 weeks \u00b7 Fixed scope \u00b7 Starting \u20B912,000'
+    engagementInfo: '1\u20134 weeks \u00b7 Fixed scope \u00b7 Starting \u20B912,000',
+    projects: [
+      { name: 'CRM & Billing Sync', link: '#', external: true }
+    ]
   }
 ]
 
@@ -202,12 +223,30 @@ onMounted(() => {
               </ul>
             </div>
 
-            <div>
+            <div class="mb-6">
               <h4 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-2">Engagement</h4>
               <div class="flex items-center gap-2 text-xs font-mono text-neutral-500">
                 <Clock class="w-3.5 h-3.5" />
                 <span>{{ service.engagementInfo }}</span>
               </div>
+            </div>
+
+            <div v-if="service.projects && service.projects.length">
+              <h4 class="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-3">Explore Work</h4>
+              <ul class="space-y-2">
+                <li v-for="(project, i) in service.projects" :key="i">
+                  <component
+                    :is="project.external ? 'a' : 'router-link'"
+                    :[project.external?'href':'to']="project.link"
+                    :target="project.external ? '_blank' : undefined"
+                    :rel="project.external ? 'noopener noreferrer' : undefined"
+                    class="inline-flex items-center gap-1.5 text-sm text-neutral-700 hover:text-tech transition-colors group/link hover:underline underline-offset-4 decoration-tech/30"
+                  >
+                    <span>{{ project.name }}</span>
+                    <ExternalLink class="w-3 h-3 text-neutral-400 group-hover/link:text-tech transition-colors" />
+                  </component>
+                </li>
+              </ul>
             </div>
           </div>
         </Transition>
@@ -221,7 +260,7 @@ onMounted(() => {
       </div>
       <router-link
         to="/contact"
-        class="shrink-0 bg-neutral-900 text-white px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-tech transition-colors duration-300"
+        class="shrink-0 bg-neutral-900 text-white px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-tech transition-colors duration-300" v-ripple
       >
         Start a Conversation
       </router-link>

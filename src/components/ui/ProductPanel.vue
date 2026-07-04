@@ -122,31 +122,11 @@ watch(() => store.isPanelOpen, (isOpen) => {
             Email Inquiry
           </a>
 
-          <a
-            v-if="store.selectedProduct.flipkartUrl"
-            :href="store.selectedProduct.flipkartUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-full border border-[#2874F0] text-[#2874F0] font-medium py-3 px-8 hover:bg-[#2874F0]/5 transition-all duration-200 uppercase tracking-wider text-sm flex items-center justify-center gap-2"
-          >
-            <ShoppingBag class="w-4 h-4" />
-            View on Flipkart
-          </a>
 
-          <a
-            v-if="store.selectedProduct.meeshoUrl"
-            :href="store.selectedProduct.meeshoUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-full border border-[#E91E63] text-[#E91E63] font-medium py-3 px-8 hover:bg-[#E91E63]/5 transition-all duration-200 uppercase tracking-wider text-sm flex items-center justify-center gap-2"
-          >
-            <Store class="w-4 h-4" />
-            View on Meesho
-          </a>
 
           <button
             @click="handleFormInquire"
-            class="w-full border border-neutral-300 text-neutral-600 font-medium py-3 px-8 hover:bg-neutral-100 transition-colors uppercase tracking-wider text-sm flex items-center justify-center gap-2"
+            class="w-full border border-neutral-300 text-neutral-600 font-medium py-3 px-8 hover:bg-neutral-100 transition-colors uppercase tracking-wider text-sm flex items-center justify-center gap-2" v-ripple
           >
             <FileText class="w-4 h-4" />
             Inquire via Form
