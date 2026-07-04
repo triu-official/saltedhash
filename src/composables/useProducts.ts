@@ -1,6 +1,5 @@
 import { logger } from '@/utils/logger'
 import { ref } from 'vue'
-import { Query } from 'appwrite'
 import { useAppwrite } from './useAppwrite'
 
 export interface Product {
@@ -72,9 +71,7 @@ export function useProducts() {
     }
 
     try {
-      const response = await databases.listDocuments(databaseId, productsCollectionId, [
-        Query.equal('status', 'active')
-      ])
+      const response = await databases.listDocuments(databaseId, productsCollectionId, [])
       products.value = response.documents as unknown as Product[]
     } catch (err: any) {
       logger.error('Error fetching products:', err)

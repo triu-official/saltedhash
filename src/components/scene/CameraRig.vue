@@ -46,8 +46,8 @@ onUnmounted(() => {
 
 <template>
   <TresPerspectiveCamera
-    :position="[0, 0, 5]"
-    :fov="70"
+    :position="[0, 0, 12]"
+    :fov="50"
     :near="0.1"
     :far="100"
     make-default
