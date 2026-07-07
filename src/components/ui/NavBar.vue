@@ -33,11 +33,13 @@ const toggleMenu = () => {
             <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
             <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-100 hidden group-[.router-link-active]:block"></span>
           </RouterLink>
+
           <RouterLink to="/studio" class="relative text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors group py-1" active-class="!text-neutral-900">
             Studio
             <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
             <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-100 hidden group-[.router-link-active]:block"></span>
           </RouterLink>
+
           <RouterLink to="/triu" class="relative text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors group py-1" active-class="!text-neutral-900">
             TRIU
             <span class="absolute bottom-0 left-0 w-full h-[2px] bg-tech origin-center scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
@@ -66,11 +68,13 @@ const toggleMenu = () => {
     <!-- Mobile menu -->
     <div v-if="isMobileMenuOpen" class="md:hidden bg-neutral-50 border-b border-neutral-200 absolute w-full left-0 top-16 shadow-lg">
       <div class="px-2 pt-2 pb-3 space-y-1">
-        <RouterLink to="/" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="isMobileMenuOpen = false">Home</RouterLink>
+        <RouterLink to="/" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="toggleMenu">Home</RouterLink>
+        
         <RouterLink to="/studio" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="isMobileMenuOpen = false">Studio</RouterLink>
-        <RouterLink to="/triu" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="isMobileMenuOpen = false">TRIU</RouterLink>
-        <RouterLink to="/about" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="isMobileMenuOpen = false">About</RouterLink>
-        <RouterLink to="/contact" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="isMobileMenuOpen = false">Contact</RouterLink>
+
+        <RouterLink to="/triu" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="toggleMenu">TRIU</RouterLink>
+        <RouterLink to="/about" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="toggleMenu">About</RouterLink>
+        <RouterLink to="/contact" class="block px-3 py-2 text-base font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100" @click="toggleMenu">Contact</RouterLink>
       </div>
     </div>
   </nav>

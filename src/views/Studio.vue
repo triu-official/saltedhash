@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import anime from 'animejs'
 import { Plus, Minus, Code2, Brain, TrendingUp, Smartphone, Shield, Zap, Check, Clock, ExternalLink } from 'lucide-vue-next'
 
@@ -117,9 +118,26 @@ const services = [
   }
 ]
 
+const route = useRoute()
 const activeService = ref<number | null>(null)
 const toggleService = (id: number) => {
   activeService.value = activeService.value === id ? null : id
+}
+
+const handleServiceQuery = () => {
+  const serviceQuery = route.query.service
+  if (serviceQuery) {
+    const serviceId = parseInt(serviceQuery as string, 10)
+    if (!isNaN(serviceId)) {
+      activeService.value = serviceId
+      setTimeout(() => {
+        const el = document.getElementById(`service-${serviceId}`)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 400)
+    }
+  }
 }
 
 onMounted(() => {
@@ -131,6 +149,11 @@ onMounted(() => {
     easing: 'easeOutExpo',
     delay: anime.stagger(100)
   })
+  handleServiceQuery()
+})
+
+watch(() => route.query.service, () => {
+  handleServiceQuery()
 })
 </script>
 
@@ -160,9 +183,9 @@ onMounted(() => {
       <div
         v-for="service in services"
         :key="service.id"
-        class="studio-element opacity-0 border-b border-neutral-200 cursor-pointer group"
+        :id="`service-${service.id}`"
+        class="studio-element opacity-0 border-b border-neutral-200 cursor-pointer group scroll-mt-24 hover:bg-neutral-50/50 transition-colors duration-300"
         @click="toggleService(service.id)"
-        v-card-tilt
       >
         <div class="py-8 flex justify-between items-center gap-6">
           <div class="flex items-center gap-6">
