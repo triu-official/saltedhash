@@ -1,31 +1,21 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { Leaf, Droplets, Sparkles, Wind } from 'lucide-vue-next'
-import anime from 'animejs'
 import { useProductsStore } from '@/stores/products'
 
 const store = useProductsStore()
 
 onMounted(() => {
   store.fetchProducts()
-
-  anime({
-    targets: '.triu-element',
-    translateY: [30, 0],
-    opacity: [0, 1],
-    duration: 1000,
-    easing: 'easeOutExpo',
-    delay: anime.stagger(150)
-  })
 })
 </script>
 
 <template>
   <div class="px-6 py-12 md:py-32 max-w-7xl mx-auto min-h-screen">
     <div class="max-w-4xl mb-32">
-      <div class="triu-element text-xs font-mono uppercase tracking-widest text-naturals mb-8">TRIU Naturals</div>
-      <h1 class="triu-element text-5xl md:text-8xl mb-8 font-serif">Rooted in<br/>tradition.</h1>
-      <p class="triu-element text-xl md:text-2xl text-foreground/70 font-light leading-relaxed max-w-2xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-naturals mb-8">TRIU Naturals</div>
+      <h1 class="text-5xl md:text-8xl mb-8 font-serif">Rooted in<br/>tradition.</h1>
+      <p class="text-xl md:text-2xl text-foreground/70 font-light leading-relaxed max-w-2xl">
         Chemical-free care returning to the essentials. We curate natural products that respect both heritage and biological utility.
       </p>
     </div>
@@ -34,7 +24,7 @@ onMounted(() => {
       <div 
         v-for="i in 3"
         :key="i"
-        class="triu-element border border-foreground/10 p-8 md:p-12 bg-background"
+        class="border border-foreground/10 p-8 md:p-12 bg-background"
       >
         <div class="w-24 h-4 bg-neutral-100 animate-pulse mb-12 rounded"></div>
         <div class="w-full aspect-square bg-neutral-100 animate-pulse mb-8 rounded"></div>
@@ -44,7 +34,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-else-if="store.error" class="text-center py-24 triu-element">
+    <div v-else-if="store.error" class="text-center py-24">
       <p class="text-foreground mb-4">Could not load products. Please try again.</p>
       <button
         @click="store.fetchProducts()"
@@ -54,7 +44,7 @@ onMounted(() => {
       </button>
     </div>
 
-    <div v-else-if="store.products.length === 0" class="triu-element">
+    <div v-else-if="store.products.length === 0">
       <div class="text-center py-24 border border-foreground/10 bg-background/50 mb-16 flex flex-col items-center">
         <h2 class="text-foreground text-3xl md:text-5xl font-serif mb-4">Curated by Request</h2>
         <p class="text-foreground/80 text-sm md:text-base uppercase tracking-widest font-mono mb-6">Available exclusively on order. Limited batch production.</p>
@@ -105,7 +95,7 @@ onMounted(() => {
         v-for="product in store.products"
         :key="product.$id"
         @click="store.openProductPanel(product)"
-        class="triu-element group border border-foreground/10 p-8 md:p-12 hover:border-naturals transition-colors duration-500 bg-background cursor-pointer relative"
+        class="group border border-foreground/10 p-8 md:p-12 hover:border-naturals transition-colors duration-500 bg-background cursor-pointer"
         v-card-tilt
       >
         <div class="flex justify-between items-start mb-12">
