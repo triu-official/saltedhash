@@ -26,20 +26,22 @@ const positions: [number, number, number][] = [
 ]
 
 const displayProducts = computed(() => {
-  const usingFallback = store.products.length > 0 && store.products[0].$id?.startsWith('fallback-')
+  const list = store.products.length > 0 ? store.products : store.fallbackProducts
+  const usingFallback = list.length > 0 && list[0].$id?.startsWith('fallback-')
 
   if (usingFallback) {
-    return store.products.slice(0, 5)
+    return list.slice(0, 5)
   }
 
   const seen = new Set<string>()
-  return store.products.filter(p => {
+  return list.filter(p => {
     const cat = p.category || 'uncategorized'
     if (seen.has(cat)) return false
     seen.add(cat)
     return true
   }).slice(0, 5)
 })
+
 
 const getPosition = (index: number): [number, number, number] => {
   return positions[index] || [0, 0, -12]

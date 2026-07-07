@@ -3,8 +3,8 @@ import { onMounted, ref } from 'vue'
 import anime from 'animejs'
 import { ArrowRight } from 'lucide-vue-next'
 import { useProductsStore } from '@/stores/products'
+import EntryScene from '@/components/scene/EntryScene.vue'
 
-const showGallery = ref(false)
 const store = useProductsStore()
 
 onMounted(() => {
@@ -35,7 +35,6 @@ onMounted(() => {
     easing: 'easeOutExpo',
     delay: anime.stagger(200)
   })
-  setTimeout(() => { showGallery.value = true }, 1200)
 })
 </script>
 
@@ -63,38 +62,16 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- 2D Product Gallery -->
-    <section class="relative h-[65vh] min-h-[480px] overflow-hidden bg-neutral-950">
-      <Transition
-        enter-active-class="transition-all duration-600 ease-out"
-        enter-from-class="opacity-0 translate-y-[30px]"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition-all duration-300 ease-in"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 translate-y-[30px]"
-      >
-        <div v-if="showGallery" class="w-full h-full flex items-center overflow-x-auto overflow-y-hidden px-8 py-12 gap-8 snap-x snap-mandatory hide-scrollbar">
-          <div
-            v-for="product in (store.products.length ? store.products : store.fallbackProducts).slice(0, 5)"
-            :key="product.$id"
-            @click="store.openProductPanel(product)"
-            class="shrink-0 w-72 h-96 bg-[#FAF9F6] border border-neutral-300 rounded-lg p-6 flex flex-col justify-between cursor-pointer snap-center hover:scale-[1.02] transition-transform shadow-lg relative overflow-hidden"
-            v-card-tilt
-          >
-            <div class="absolute left-0 top-0 bottom-0 w-1.5" :style="{ backgroundColor: product.category === 'natural' ? '#2F4F2F' : (product.category === 'tech' ? '#233CB5' : '#666') }"></div>
-            <div>
-              <div class="text-[11px] font-mono tracking-widest text-neutral-500 mb-6 uppercase ml-2">{{ product.category || 'uncategorized' }}</div>
-              <h3 class="font-serif text-2xl font-bold text-neutral-900 leading-tight">{{ product.name }}</h3>
-            </div>
-            <div class="mt-auto pt-6">
-              <div v-if="product.price" class="text-lg font-medium text-neutral-800">₹{{ product.price.toFixed(2) }}</div>
-              <div class="text-[10px] font-mono text-neutral-500 mt-4 text-right">{{ product.brand_code }}</div>
-            </div>
-          </div>
+    <!-- Product Gallery (3D Space Only) -->
+    <section class="relative h-[70vh] min-h-[520px] overflow-hidden bg-neutral-950 flex flex-col">
+      <div class="flex-grow w-full h-full relative">
+        <div class="w-full h-full absolute inset-0 bg-neutral-950">
+          <EntryScene />
         </div>
-      </Transition>
-      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-xs font-mono uppercase tracking-widest pointer-events-none">
-        Scroll to browse · Click a product to view
+      </div>
+
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-xs font-mono uppercase tracking-widest pointer-events-none z-10 text-center w-full max-w-lg px-4">
+        Move cursor to tilt camera · Hover card to highlight · Click to view details
       </div>
     </section>
 
@@ -146,3 +123,18 @@ onMounted(() => {
     </section>
   </main>
 </template>
+
+<style scoped>
+.gallery-fade-enter-active,
+.gallery-fade-leave-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.gallery-fade-enter-from {
+  opacity: 0;
+  transform: scale(0.98);
+}
+.gallery-fade-leave-to {
+  opacity: 0;
+  transform: scale(1.02);
+}
+</style>

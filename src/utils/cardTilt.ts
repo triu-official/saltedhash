@@ -2,51 +2,43 @@ const cleanupKey = '__tiltCleanup'
 
 export const vCardTilt = {
   mounted(el: HTMLElement) {
-    let targetX = 0, targetY = 0
-    let currentX = 0, currentY = 0
-    let rafId: number
-    let isRunning = false
-
     el.style.transformStyle = 'preserve-3d'
     el.style.willChange = 'transform'
+    el.style.transition = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease, border-color 0.3s ease'
 
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+    let rect: DOMRect | null = null
 
-    const loop = () => {
-      currentX = lerp(currentX, targetX, 0.15)
-      currentY = lerp(currentY, targetY, 0.15)
-      el.style.transform = `perspective(800px) rotateX(${currentX.toFixed(2)}deg) rotateY(${currentY.toFixed(2)}deg)`
-      const atRest = Math.abs(currentX) < 0.01 && Math.abs(currentY) < 0.01 && targetX === 0 && targetY === 0
-      if (atRest) {
-        isRunning = false
-        return
-      }
-      rafId = requestAnimationFrame(loop)
+    const handleMouseEnter = () => {
+      rect = el.getBoundingClientRect()
+      el.style.transition = 'transform 0.1s ease-out, box-shadow 0.3s ease, border-color 0.3s ease'
     }
 
-    el.addEventListener('mousemove', (e) => {
-      const rect = el.getBoundingClientRect()
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!rect) return
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
-      targetY = ((x - rect.width / 2) / (rect.width / 2)) * 6
-      targetX = -((y - rect.height / 2) / (rect.height / 2)) * 6
-      if (!isRunning) {
-        isRunning = true
-        rafId = requestAnimationFrame(loop)
-      }
-    }, { passive: true })
+      
+      // Calculate rotation (-5 to 5 degrees)
+      const tiltY = ((x - rect.width / 2) / (rect.width / 2)) * 5
+      const tiltX = -((y - rect.height / 2) / (rect.height / 2)) * 5
 
-    el.addEventListener('mouseleave', () => {
-      targetX = 0
-      targetY = 0
-      if (!isRunning) {
-        isRunning = true
-        rafId = requestAnimationFrame(loop)
-      }
-    }, { passive: true })
+      el.style.transform = `perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`
+    }
+
+    const handleMouseLeave = () => {
+      rect = null
+      el.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease, border-color 0.3s ease'
+      el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)'
+    }
+
+    el.addEventListener('mouseenter', handleMouseEnter, { passive: true })
+    el.addEventListener('mousemove', handleMouseMove, { passive: true })
+    el.addEventListener('mouseleave', handleMouseLeave, { passive: true })
 
     ;(el as any)[cleanupKey] = () => {
-      cancelAnimationFrame(rafId)
+      el.removeEventListener('mouseenter', handleMouseEnter)
+      el.removeEventListener('mousemove', handleMouseMove)
+      el.removeEventListener('mouseleave', handleMouseLeave)
     }
   },
   unmounted(el: HTMLElement) {
