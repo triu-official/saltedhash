@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, HelpCircle, Leaf, ShieldCheck, ShoppingBag, Droplets, Calendar, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import QuickViewModal, { QuickViewData } from './QuickViewModal';
+import { fetchActiveProducts } from '../lib/appwrite';
 
 interface TriuViewProps {
   setActiveTab: (tab: string) => void;
@@ -75,6 +76,63 @@ export default function TriuView({ setActiveTab, onPrefillPreorder, onAddToCart,
     }
   ];
 
+  const [products, setProducts] = useState<Product[]>(TRIU_PRODUCTS);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadProducts() {
+      setLoading(true);
+      try {
+        const appwriteProducts = await fetchActiveProducts();
+        if (appwriteProducts && appwriteProducts.length > 0) {
+          const mapped: Product[] = appwriteProducts.map((doc: any) => {
+            const name = doc.name || 'Unnamed Botanical Formulation';
+            const tagline = doc.category || doc.brand_code || 'Premium Botanical Care';
+            const description = doc.description || 'Raw Ayurvedic compounding with direct agricultural sourcing.';
+            
+            let ingredients = ['100% Organic Extracts'];
+            if (Array.isArray(doc.tags) && doc.tags.length > 0) {
+              const filteredTags = doc.tags.filter((t: any) => typeof t === 'string' && t.trim() !== '');
+              if (filteredTags.length > 0) {
+                ingredients = filteredTags;
+              }
+            }
+
+            const slug = doc.slug || doc.$id || 'triu-custom';
+            const price = typeof doc.price === 'number' ? doc.price : 1999;
+
+            return {
+              id: doc.$id,
+              name,
+              tagline,
+              description,
+              ingredients,
+              volume: '15 mL e',
+              batchNum: `TRIU-${slug.substring(0, 3).toUpperCase()}`,
+              capacity: 100,
+              available: Math.floor(10 + Math.random() * 40),
+              status: 'Ready to Fill' as const,
+              keyNotes: 'Formulated under cold-press structural standards.',
+              price
+            };
+          });
+
+          setProducts(mapped);
+          
+          // Align selection if current is missing from new set
+          if (!mapped.some(p => p.id === selectedProduct)) {
+            setSelectedProduct(mapped[0]?.id || null);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to resolve Appwrite products, running static assets offline:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
+
   const handleReservation = (prodName: string) => {
     if (onPrefillPreorder) {
       onPrefillPreorder(prodName);
@@ -83,7 +141,7 @@ export default function TriuView({ setActiveTab, onPrefillPreorder, onAddToCart,
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const activeProduct = TRIU_PRODUCTS.find(p => p.id === selectedProduct) || TRIU_PRODUCTS[0];
+  const activeProduct = products.find(p => p.id === selectedProduct) || products[0];
 
   return (
     <div id="triu-view" className="pt-24 min-h-screen bg-[#f5f4ef] text-[#2c3327]">
@@ -151,7 +209,7 @@ export default function TriuView({ setActiveTab, onPrefillPreorder, onAddToCart,
             </div>
 
             <div className="space-y-3 pt-4">
-              {TRIU_PRODUCTS.map((prod) => (
+              {products.map((prod) => (
                 <button
                   key={prod.id}
                   onClick={() => setSelectedProduct(prod.id)}

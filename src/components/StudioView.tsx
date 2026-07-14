@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, ChevronDown, ChevronUp, Cpu, Network, Rocket, Layers, Code, ShieldCheck, Terminal, Lightbulb, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SERVICES, PROCESS_STEPS } from '../data';
 import { Service } from '../types';
 import ScrollReveal from './ScrollReveal';
 import QuickViewModal, { QuickViewData } from './QuickViewModal';
+import { fetchServices } from '../lib/appwrite';
 
 interface StudioViewProps {
   setActiveTab: (tab: string) => void;
@@ -142,9 +143,55 @@ export default function StudioView({ setActiveTab, onPrefillService, onAddToCart
 
   const categories = ['All', 'Intelligence', 'Engineering', 'Execution', 'Aesthetics', 'Efficiency', 'Security'];
 
+  const [services, setServices] = useState<Service[]>(SERVICES);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadServices() {
+      setLoading(true);
+      try {
+        const appwriteServices = await fetchServices();
+        if (appwriteServices && appwriteServices.length > 0) {
+          const mapped: Service[] = appwriteServices.map((doc: any) => {
+            const title = doc.title || 'Unnamed Consulting Service';
+            const description = doc.description || 'Bespoke custom software and architectural design services.';
+            
+            const categoryList = ['Intelligence', 'Engineering', 'Execution', 'Aesthetics', 'Efficiency', 'Security'];
+            const tags = Array.isArray(doc.tags) ? doc.tags.filter((t: any) => typeof t === 'string' && t.trim() !== '') : [];
+            const matchedCategory = tags.find((tag: string) => categoryList.includes(tag)) || 'Engineering';
+            
+            const tagline = doc.tagline || (description.length > 80 ? description.substring(0, 80) + '...' : description);
+            const benefits = Array.isArray(doc.benefits) ? doc.benefits.filter((b: any) => typeof b === 'string' && b.trim() !== '') : [];
+
+            return {
+              id: doc.$id || title.toLowerCase().replace(/\s+/g, '-'),
+              title,
+              category: matchedCategory,
+              tagline,
+              description,
+              details: benefits,
+              capabilities: tags
+            };
+          });
+
+          setServices(mapped);
+          
+          if (!mapped.some(s => s.id === expandedServiceId)) {
+            setExpandedServiceId(mapped[0]?.id || null);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to resolve Appwrite services, running static consulting offline:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadServices();
+  }, []);
+
   const filteredServices = activeCategory === 'All' 
-    ? SERVICES 
-    : SERVICES.filter(s => s.category === activeCategory);
+    ? services 
+    : services.filter(s => s.category === activeCategory);
 
   const toggleService = (id: string) => {
     if (expandedServiceId === id) {

@@ -34,16 +34,13 @@ This guide walks through setting up the Appwrite backend for SALTEDHASH.
 |----------------|--------|-------|----------|---------|
 | `name`         | string | 255   | Yes      | —       |
 | `slug`         | string | 255   | Yes      | —       |
-| `description`  | string | 2000  | Yes      | —       |
+| `description`  | string | 2048  | Yes      | —       |
 | `price`        | double | —     | Yes      | —       |
 | `brand_code`   | string | 50    | Yes      | —       |
-| `status`       | string | 20    | Yes      | —       |
+| `status`       | string | 20    | Yes      | active  |
 | `imageFileId`  | string | 255   | No       | —       |
-| `category`     | string | 50    | No       | —       |
-| `flipkartUrl`  | string | 500   | No       | —       |
-| `meeshoUrl`    | string | 500   | No       | —       |
-| `whatsappText` | string | 500   | No       | —       |
-| `tags`         | string[] | —   | No       | —       |
+| `category`     | string | 100   | No       | —       |
+| `tags`         | string[] | 100 | No       | —       |
 
 ### Indexes
 

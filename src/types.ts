@@ -33,6 +33,7 @@ export interface ProcessStep {
 export interface InquiryFormState {
   fullName: string;
   email: string;
+  phone: string;
   company: string;
   interestType: 'Venture Partnership' | 'AI Integration' | 'Custom Software' | 'SaaS MVP' | 'TRIU Naturals Preorder' | 'Other';
   projectBrief: string;
