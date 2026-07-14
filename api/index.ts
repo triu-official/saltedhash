@@ -5,7 +5,12 @@ import fs from 'fs';
 const app = express();
 app.use(express.json());
 
-// Determine order persistence based on environment (Vercel has read-only root)
+// Determine order persistence based on environment.
+// WARNING: Vercel serverless environments are ephemeral and read-only.
+// Writing to '/tmp/orders.json' works temporarily but gets wiped during cold starts
+// or when requests scale to different serverless instances.
+// This local JSON file persistence is intended for development and local testing only.
+// In a true production environment, migrate order persistence to Appwrite databases.
 const isVercel = process.env.VERCEL === '1';
 const ORDERS_FILE = isVercel 
   ? '/tmp/orders.json' 

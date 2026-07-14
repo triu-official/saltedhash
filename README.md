@@ -62,6 +62,10 @@ Connect repo to Vercel. Set environment variables from `.env` in Vercel dashboar
 | `POST` | `/api/orders` | Create a new order |
 | `POST` | `/api/orders/:id/status` | Update order status |
 
+> [!WARNING]
+> **API Order Persistence Limitation on Vercel:**
+> Server-side order persistence writes to a local file (`orders.json` or `/tmp/orders.json`). In Vercel serverless environments, files written to `/tmp` are ephemeral and are wiped when the functions recycle or cold-start. Real production orders should be stored in a persistent database (e.g. Appwrite).
+
 ## Env Variables
 
 See [`.env.example`](.env.example) for all required environment variables.

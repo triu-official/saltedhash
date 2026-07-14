@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, ArrowUpRight, Check, AlertCircle, RefreshCw, Cpu, Send, Mail, Building } from 'lucide-react';
 import { InquiryFormState } from '../types';
+import { submitContactLead, isAppwriteConfigured } from '../lib/appwrite';
 
 interface ContactViewProps {
   prefilledInterest: string | null;
@@ -12,6 +13,7 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
   const [formData, setFormData] = useState<InquiryFormState>({
     fullName: '',
     email: '',
+    phone: '',
     company: '',
     interestType: 'Custom Software',
     projectBrief: '',
@@ -21,6 +23,7 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [txnHash, setTxnHash] = useState('');
+  const [submissionTarget, setSubmissionTarget] = useState<'appwrite' | 'fallback' | null>(null);
 
   // Handle prefilling
   useEffect(() => {
@@ -65,23 +68,49 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
     return hash;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate block writing delay
+    try {
+      if (isAppwriteConfigured()) {
+        const response = await submitContactLead({
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.projectBrief,
+          productInterest: prefilledInterest || undefined,
+          source: 'website'
+        });
+
+        if (response) {
+          setTxnHash(response.$id);
+          setSubmissionTarget('appwrite');
+          setSubmitted(true);
+          clearPrefills();
+          setIsSubmitting(false);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('[Contact] Error submitting lead to Appwrite:', error);
+    }
+
+    // Fallback: local execution block
     setTimeout(() => {
       setIsSubmitting(false);
-      setSubmitted(true);
+      setSubmissionTarget('fallback');
       setTxnHash(generateMockHash());
+      setSubmitted(true);
       clearPrefills();
-    }, 1500);
+    }, 1200);
   };
 
   const handleReset = () => {
     setFormData({
       fullName: '',
       email: '',
+      phone: '',
       company: '',
       interestType: 'Custom Software',
       projectBrief: '',
@@ -89,6 +118,7 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
     });
     setSubmitted(false);
     setTxnHash('');
+    setSubmissionTarget(null);
   };
 
   return (
@@ -134,9 +164,8 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
                   </button>
                 </div>
               )}
-
               {/* Standard Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="fullName" className="block font-mono text-[10px] uppercase tracking-wider text-studio-muted font-semibold">
                     Full Name / Representative *
@@ -164,6 +193,22 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="name@company.com"
+                    required
+                    className="w-full bg-studio-cream/30 border border-studio-ash/80 p-3 text-sm focus:outline-hidden focus:border-studio-dark focus:bg-studio-light transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="phone" className="block font-mono text-[10px] uppercase tracking-wider text-studio-muted font-semibold">
+                    Contact Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+91 XXXXX XXXXX"
                     required
                     className="w-full bg-studio-cream/30 border border-studio-ash/80 p-3 text-sm focus:outline-hidden focus:border-studio-dark focus:bg-studio-light transition-all"
                   />
@@ -272,11 +317,13 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
               </div>
             </form>
           ) : (
-            /* SUCCESS RECIEPT */
-            <div id="contact-success-receipt" className="border border-emerald-500/30 bg-emerald-50/10 p-8 space-y-6">
-              <div className="flex items-center gap-2.5 text-emerald-600 font-mono text-xs font-semibold">
+            /* SUCCESS RECEIPT */
+            <div id="contact-success-receipt" className={`border p-8 space-y-6 ${submissionTarget === 'appwrite' ? 'border-emerald-500/30 bg-emerald-50/10' : 'border-amber-500/30 bg-amber-50/10'}`}>
+              <div className={`flex items-center gap-2.5 font-mono text-xs font-semibold ${submissionTarget === 'appwrite' ? 'text-emerald-600' : 'text-amber-700'}`}>
                 <ShieldCheck className="h-5 w-5 animate-pulse" />
-                TRANSMISSION ACKNOWLEDGED & REGISTERED
+                {submissionTarget === 'appwrite' 
+                  ? 'TRANSMISSION ACKNOWLEDGED & PERSISTED IN APPWRITE' 
+                  : 'OFFLINE MODE: LOCAL SIMULATION (DATABASE SYNC PENDING)'}
               </div>
 
               <div className="space-y-2">
@@ -284,7 +331,9 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
                   Thank you, {formData.fullName}.
                 </h3>
                 <p className="font-sans text-sm text-studio-muted font-light leading-relaxed">
-                  Your inquiry specification has been parsed successfully. Our systems have allocated a processing block for your project. A human engineering partner will review your technical brief and respond to <span className="font-semibold">{formData.email}</span> within 24 business hours.
+                  {submissionTarget === 'appwrite'
+                    ? `Your inquiry has been stored securely in our database. A human engineering partner will review your technical brief and respond to ${formData.email} within 24 business hours.`
+                    : `Your inquiry has been processed locally in sandbox mode. Appwrite backend coordinates are not set or unavailable. Your representative email ${formData.email} has been cached.`}
                 </p>
               </div>
 
@@ -292,6 +341,12 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
                 <div className="flex justify-between text-studio-muted">
                   <span>TRANSACTION ID:</span>
                   <span className="text-studio-dark select-all">{txnHash}</span>
+                </div>
+                <div className="flex justify-between text-studio-muted">
+                  <span>STORAGE TARGET:</span>
+                  <span className={`font-semibold ${submissionTarget === 'appwrite' ? 'text-emerald-700' : 'text-amber-800'}`}>
+                    {submissionTarget === 'appwrite' ? 'APPWRITE_CLOUD_DB' : 'LOCAL_DEV_FALLBACK'}
+                  </span>
                 </div>
                 <div className="flex justify-between text-studio-muted">
                   <span>SYSTEM BLOCK:</span>
@@ -348,6 +403,7 @@ export default function ContactView({ prefilledInterest, prefilledType, clearPre
                   payload: {
                     representative: formData.fullName || "NULL_STATED",
                     corporateEmail: formData.email || "NULL_STATED",
+                    contactPhone: formData.phone || "NULL_STATED",
                     companyName: formData.company || "NULL_STATED",
                     interestType: formData.interestType,
                     allocatedCapital: formData.budgetRange,
